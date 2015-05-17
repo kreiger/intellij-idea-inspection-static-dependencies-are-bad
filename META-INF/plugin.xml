@@ -1,0 +1,43 @@
+<idea-plugin version="2">
+  <id>com.linuxgods.kreiger.intellij.idea.inspections.utility.singleton</id>
+  <name>Utility class can be singleton</name>
+  <version>1.0</version>
+  <vendor email="christoffer.hammarstrom@linuxgods.com" url="http://kreiger.linuxgods.com">Christoffer Hammarström</vendor>
+
+  <description><![CDATA[
+    Converts utility class to singleton.
+  ]]></description>
+
+  <change-notes><![CDATA[
+  ]]>
+  </change-notes>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="131"/>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+  <depends>com.intellij.modules.java</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <localInspection implementationClass="com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton.UtilityClassCanBeSingletonInspection"
+            groupName="Class structure" groupPath="Java" displayName="Utility class can be singleton" enabledByDefault="true"/>
+    <!-- Add your extensions here -->
+  </extensions>
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+</idea-plugin>
