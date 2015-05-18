@@ -6,8 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.refactoring.util.RefactoringChangeUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,25 +38,40 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
         final PsiClass psiClass = (PsiClass) parent;
         final PsiManager psiManager = PsiManager.getInstance(project);
         final PsiElementFactory psiElementFactory = JavaPsiFacade.getElementFactory(project);
+
+        fixReferences(psiClass, psiManager, psiElementFactory);
+
         PsiClassType psiClassType = PsiType.getTypeByName(psiClass.getQualifiedName(), project, GlobalSearchScope.projectScope(project));
+        psiClass.add(createInstanceField(psiClass, psiElementFactory, psiClassType));
+        psiClass.add(createGetInstanceMethod(psiElementFactory, psiClassType));
+    }
+
+    private void fixReferences(PsiClass psiClass, PsiManager psiManager, PsiElementFactory psiElementFactory) {
         for (PsiMember psiMember : members(psiClass.getFields(), psiClass.getMethods())) {
             if (psiMember instanceof PsiField && psiMember.hasModifierProperty(PsiModifier.FINAL)) {
                 continue;
             }
             for (PsiReference memberReference : ReferencesSearch.search(psiMember).findAll()) {
-                memberReference.getElement().accept(new StaticReferenceToSingletonVisitor(psiElementFactory, psiClass, psiManager));
+                memberReference.getElement().accept(new ConvertStaticReferenceToSingletonVisitor(psiElementFactory, psiClass, psiManager));
             }
             psiMember.getModifierList().setModifierProperty(PsiModifier.STATIC, false);
         }
-        PsiField instanceField = psiElementFactory.createField("instance", psiClassType);
-        instanceField.getModifierList().setModifierProperty(PsiModifier.STATIC, true);
-        instanceField.setInitializer(psiElementFactory.createExpressionFromText("new "+psiClass.getName()+"()", instanceField));
-        psiClass.add(instanceField);
+    }
 
+    @NotNull
+    private PsiMethod createGetInstanceMethod(PsiElementFactory psiElementFactory, PsiClassType psiClassType) {
         PsiMethod getInstanceMethod = psiElementFactory.createMethod("getInstance", psiClassType);
         getInstanceMethod.getModifierList().setModifierProperty(PsiModifier.STATIC, true);
         getInstanceMethod.getBody().add(psiElementFactory.createStatementFromText("return instance;", getInstanceMethod.getBody()));
-        psiClass.add(getInstanceMethod);
+        return getInstanceMethod;
+    }
+
+    @NotNull
+    private PsiField createInstanceField(PsiClass psiClass, PsiElementFactory psiElementFactory, PsiClassType psiClassType) {
+        PsiField instanceField = psiElementFactory.createField("instance", psiClassType);
+        instanceField.getModifierList().setModifierProperty(PsiModifier.STATIC, true);
+        instanceField.setInitializer(psiElementFactory.createExpressionFromText("new "+psiClass.getName()+"()", instanceField));
+        return instanceField;
     }
 
     @NotNull
@@ -70,50 +83,4 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
         return result.toArray(new PsiMember[result.size()]);
     }
 
-    private static class StaticReferenceToSingletonVisitor extends JavaElementVisitor {
-        private final PsiElementFactory psiElementFactory;
-        private PsiClass psiClass;
-        private final PsiManager psiManager;
-
-        public StaticReferenceToSingletonVisitor(PsiElementFactory psiElementFactory, PsiClass psiClass, PsiManager psiManager) {
-            this.psiElementFactory = psiElementFactory;
-            this.psiClass = psiClass;
-            this.psiManager = psiManager;
-        }
-
-        @Override
-        public void visitReferenceExpression(PsiReferenceExpression referenceExpression) {
-            boolean inClassOrInner = PsiTreeUtil.isAncestor(psiClass, referenceExpression, true) && !hasStaticParentClass(referenceExpression);
-            PsiExpression qualifierExpression;
-            if (inClassOrInner) {
-                qualifierExpression = RefactoringChangeUtil.createThisExpression(psiManager, psiClass);
-            } else {
-                qualifierExpression = referenceExpression.getQualifierExpression();
-                if (qualifierExpression == null) {
-                    qualifierExpression = psiElementFactory.createReferenceExpression(psiClass);
-                }
-                qualifierExpression = psiElementFactory.createExpressionFromText(qualifierExpression.getText() + ".getInstance()", referenceExpression);
-            }
-            referenceExpression.setQualifierExpression(qualifierExpression);
-        }
-
-        private boolean hasStaticParentClass(PsiReferenceExpression referenceExpression) {
-            PsiElement element = referenceExpression;
-            while ( null != (element = PsiTreeUtil.getParentOfType(element, PsiClass.class))) {
-                PsiClass parentClass = (PsiClass) element;
-                if (parentClass.equals(psiClass)) {
-                    break;
-                }
-                if (parentClass.hasModifierProperty(PsiModifier.STATIC)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public void visitImportStaticReferenceElement(PsiImportStaticReferenceElement reference) {
-            reference.getParent().delete();
-        }
-    }
 }
