@@ -31,8 +31,7 @@ class ConvertStaticReferenceToSingletonVisitor extends JavaElementVisitor {
         referenceExpression.setQualifierExpression(qualifierExpression);
     }
 
-    private boolean hasStaticParentClass(PsiReferenceExpression referenceExpression) {
-        PsiElement element = referenceExpression;
+    private boolean hasStaticParentClass(PsiElement element) {
         while ( null != (element = PsiTreeUtil.getParentOfType(element, PsiClass.class))) {
             PsiClass parentClass = (PsiClass) element;
             if (parentClass.equals(psiClass)) {

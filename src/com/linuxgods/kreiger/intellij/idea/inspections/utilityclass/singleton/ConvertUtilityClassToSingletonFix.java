@@ -37,7 +37,7 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
             return;
         }
 
-        final Map<PsiMember, Collection<PsiReference>> references = findReferences(members(psiClass.getFields(), psiClass.getMethods()));
+        final Map<PsiMember, Collection<PsiReference>> references = findReferences(members(psiClass.getFields(), psiClass.getMethods(), psiClass.getInitializers()));
         new ConvertUtilityClassToSingletonCommandAction(project, psiClass, references).execute();
     }
 
