@@ -4,6 +4,12 @@ import static com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singl
 
 public class UtilityClassUser2 {
 
+    private static boolean bar;
+
+    static {
+        UtilityClassUser2.bar = foo;
+    }
+
     public boolean isFoo() {
         return foo;
     }

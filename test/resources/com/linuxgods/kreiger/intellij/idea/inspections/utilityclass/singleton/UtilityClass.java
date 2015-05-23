@@ -12,6 +12,14 @@ public class UtilityClass {
     static boolean foo = false;
     public final static String SOME_CONSTANT = "some constant";
 
+    {
+
+    }
+
+    static {
+        foo = true;
+    }
+
     public static Runnable getRunnable() {
         return new Runnable() {
             @Override
