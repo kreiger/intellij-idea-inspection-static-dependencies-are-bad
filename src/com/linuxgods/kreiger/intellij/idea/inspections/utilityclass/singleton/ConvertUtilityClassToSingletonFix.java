@@ -93,14 +93,6 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
     }
 
     @NotNull
-    private PsiField createInstanceField(PsiClass psiClass, PsiElementFactory psiElementFactory, PsiClassType psiClassType) {
-        PsiField instanceField = psiElementFactory.createField("instance", psiClassType);
-        instanceField.getModifierList().setModifierProperty(PsiModifier.STATIC, true);
-        instanceField.setInitializer(psiElementFactory.createExpressionFromText("new "+psiClass.getName()+"()", instanceField));
-        return instanceField;
-    }
-
-    @NotNull
     private static PsiMember[] members(PsiMember[]... memberses) {
         List<PsiMember> result = new ArrayList<>();
         for (PsiMember[] members : memberses) {
@@ -127,7 +119,6 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
             fixReferences(psiClass, psiManager, psiElementFactory, references);
 
             PsiClassType psiClassType = PsiType.getTypeByName(psiClass.getQualifiedName(), getProject(), GlobalSearchScope.projectScope(getProject()));
-            psiClass.add(createInstanceField(psiClass, psiElementFactory, psiClassType));
             psiClass.add(createGetInstanceMethod(psiElementFactory, psiClassType));
         }
     }
