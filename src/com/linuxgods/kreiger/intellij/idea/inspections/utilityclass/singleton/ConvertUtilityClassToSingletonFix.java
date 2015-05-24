@@ -4,8 +4,12 @@ import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.CaretModel;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import org.jetbrains.annotations.Nls;
@@ -38,7 +42,19 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
         }
 
         final Map<PsiMember, Collection<PsiReference>> references = findReferences(members(psiClass.getFields(), psiClass.getMethods(), psiClass.getInitializers()));
-        new ConvertUtilityClassToSingletonCommandAction(project, psiClass, references).execute();
+        ConvertUtilityClassToSingletonCommandAction convertUtilityClassToSingletonCommandAction = new ConvertUtilityClassToSingletonCommandAction(project, psiClass, references);
+        convertUtilityClassToSingletonCommandAction.execute();
+        PsiMethod method = convertUtilityClassToSingletonCommandAction.method;
+        method.getBody().acceptChildren(new JavaElementVisitor() {
+            @Override
+            public void visitReturnStatement(PsiReturnStatement statement) {
+                PsiExpression returnValue = statement.getReturnValue();
+                Editor selectedTextEditor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+                CaretModel caretModel = selectedTextEditor.getCaretModel();
+                caretModel.moveToOffset(returnValue.getTextOffset());
+                selectedTextEditor.getSelectionModel().setSelection(returnValue.getTextOffset(), returnValue.getTextOffset() + returnValue.getTextLength());
+            }
+        });
     }
 
     @Nullable
@@ -104,6 +120,7 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
     private class ConvertUtilityClassToSingletonCommandAction extends WriteCommandAction {
         private final PsiClass psiClass;
         private final Map<PsiMember, Collection<PsiReference>> references;
+        private PsiMethod method;
 
         public ConvertUtilityClassToSingletonCommandAction(Project project, PsiClass psiClass, Map<PsiMember, Collection<PsiReference>> references) {
             super(project, ConvertUtilityClassToSingletonFix.this.getContainingFiles(psiClass, references));
@@ -119,7 +136,8 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
             fixReferences(psiClass, psiManager, psiElementFactory, references);
 
             PsiClassType psiClassType = PsiType.getTypeByName(psiClass.getQualifiedName(), getProject(), GlobalSearchScope.projectScope(getProject()));
-            psiClass.add(createGetInstanceMethod(psiElementFactory, psiClassType));
+            method = (PsiMethod) psiClass.add(createGetInstanceMethod(psiElementFactory, psiClassType));
+            CodeStyleManager.getInstance(psiManager).reformat(method);
         }
     }
 }
