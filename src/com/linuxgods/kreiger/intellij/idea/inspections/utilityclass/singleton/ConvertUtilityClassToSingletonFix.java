@@ -4,7 +4,6 @@ import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -48,13 +47,14 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
         method.getBody().acceptChildren(new JavaElementVisitor() {
             @Override
             public void visitReturnStatement(PsiReturnStatement statement) {
-                PsiExpression returnValue = statement.getReturnValue();
-                Editor selectedTextEditor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-                CaretModel caretModel = selectedTextEditor.getCaretModel();
-                caretModel.moveToOffset(returnValue.getTextOffset());
-                selectedTextEditor.getSelectionModel().setSelection(returnValue.getTextOffset(), returnValue.getTextOffset() + returnValue.getTextLength());
+                placeCaretAndSelectionOn(statement.getReturnValue(), FileEditorManager.getInstance(project).getSelectedTextEditor());
             }
         });
+    }
+
+    private void placeCaretAndSelectionOn(PsiElement element, Editor editor) {
+        editor.getCaretModel().moveToOffset(element.getTextOffset());
+        editor.getSelectionModel().setSelection(element.getTextOffset(), element.getTextOffset() + element.getTextLength());
     }
 
     @Nullable
@@ -69,7 +69,7 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
 
     @NotNull
     private PsiFile[] getContainingFiles(PsiClass psiClass, Map<PsiMember, Collection<PsiReference>> references) {
-        Set<PsiFile> files = new HashSet<>();
+        Set<PsiFile> files = new HashSet<PsiFile>();
         for (Collection<PsiReference> memberReferences : references.values()) {
             for (PsiReference memberReference : memberReferences) {
                 files.add(memberReference.getElement().getContainingFile());
@@ -84,13 +84,13 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
             for (PsiReference memberReference : memberReferences.getValue()) {
                 memberReference.getElement().accept(new ConvertStaticReferenceToSingletonVisitor(psiElementFactory, psiClass, psiManager));
             }
-            memberReferences.getKey().getModifierList().setModifierProperty(PsiModifier.STATIC, false);
+            setStatic(memberReferences.getKey(), false);
         }
     }
 
     @NotNull
     private Map<PsiMember, Collection<PsiReference>> findReferences(PsiMember[] members) {
-        Map<PsiMember, Collection<PsiReference>> references = new HashMap<>();
+        Map<PsiMember, Collection<PsiReference>> references = new HashMap<PsiMember, Collection<PsiReference>>();
         for (PsiMember psiMember : members) {
             if (psiMember instanceof PsiField && psiMember.hasModifierProperty(PsiModifier.FINAL)) {
                 continue;
@@ -103,14 +103,18 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
     @NotNull
     private PsiMethod createGetInstanceMethod(PsiElementFactory psiElementFactory, PsiClassType psiClassType) {
         PsiMethod getInstanceMethod = psiElementFactory.createMethod("getInstance", psiClassType);
-        getInstanceMethod.getModifierList().setModifierProperty(PsiModifier.STATIC, true);
+        setStatic(getInstanceMethod, true);
         getInstanceMethod.getBody().add(psiElementFactory.createStatementFromText("return instance;", getInstanceMethod.getBody()));
         return getInstanceMethod;
     }
 
+    private void setStatic(PsiModifierListOwner psiModifierListOwner, boolean s) {
+        psiModifierListOwner.getModifierList().setModifierProperty(PsiModifier.STATIC, s);
+    }
+
     @NotNull
     private static PsiMember[] members(PsiMember[]... memberses) {
-        List<PsiMember> result = new ArrayList<>();
+        List<PsiMember> result = new ArrayList<PsiMember>();
         for (PsiMember[] members : memberses) {
             result.addAll(asList(members));
         }
