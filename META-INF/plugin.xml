@@ -39,6 +39,10 @@
 
   <actions>
     <!-- Add your actions here -->
+    <action id="ConvertUtilityClassToSingleton" class="com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton.ConvertUtilityClassToSingletonAction"
+            text="Convert Utility class to Singleton">
+      <add-to-group group-id="RefactoringMenu4" anchor="before" relative-to-action="AnonymousToInner"/>
+    </action>
   </actions>
 
 </idea-plugin>
