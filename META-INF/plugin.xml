@@ -6,7 +6,7 @@
 
   <description><![CDATA[
     Converts Java utility class (only static members) to singleton,
-    changing all references from UtilityClass.member to UtilityClass.getInstance().member
+    changing all references from <code>UtilityClass.member</code> to <code>UtilityClass.getInstance().member</code>.
   ]]></description>
 
   <change-notes><![CDATA[
