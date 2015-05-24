@@ -1,11 +1,12 @@
 <idea-plugin version="2">
   <id>com.linuxgods.kreiger.intellij.idea.inspections.utility.singleton</id>
-  <name>Utility class can be singleton</name>
+  <name>Java Utility class can be Singleton</name>
   <version>1.0</version>
-  <vendor email="christoffer.hammarstrom@linuxgods.com" url="http://kreiger.linuxgods.com">Christoffer Hammarström</vendor>
+  <vendor email="christoffer.hammarstrom@linuxgods.com" url="https://github.com/kreiger/intellij-idea-inspection-utility-class-can-be-singleton">Christoffer Hammarström</vendor>
 
   <description><![CDATA[
-    Converts utility class to singleton.
+    Converts Java utility class (only static members) to singleton,
+    changing all references from UtilityClass.member to UtilityClass.getInstance().member
   ]]></description>
 
   <change-notes><![CDATA[
