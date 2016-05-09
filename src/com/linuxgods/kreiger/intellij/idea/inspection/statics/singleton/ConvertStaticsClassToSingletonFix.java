@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton;
+package com.linuxgods.kreiger.intellij.idea.inspection.statics.singleton;
 
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
@@ -19,7 +19,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 
-class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
+class ConvertStaticsClassToSingletonFix implements LocalQuickFix {
     @Nls
     @NotNull
     @Override
@@ -131,7 +131,7 @@ class ConvertUtilityClassToSingletonFix implements LocalQuickFix {
         private PsiMethod method;
 
         public ConvertUtilityClassToSingletonCommandAction(Project project, PsiClass psiClass, Map<PsiMember, Collection<PsiReference>> references) {
-            super(project, ConvertUtilityClassToSingletonFix.this.getContainingFiles(psiClass, references));
+            super(project, ConvertStaticsClassToSingletonFix.this.getContainingFiles(psiClass, references));
             this.psiClass = psiClass;
             this.references = references;
         }

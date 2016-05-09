@@ -1,6 +1,6 @@
 <idea-plugin version="2">
-  <id>com.linuxgods.kreiger.intellij.idea.inspections.utility.singleton</id>
-  <name>Java Utility class can be Singleton</name>
+  <id>com.linuxgods.kreiger.intellij.idea.inspection.statics</id>
+  <name>Static Dependencies Are Bad</name>
   <version>1.0</version>
   <vendor email="christoffer.hammarstrom@linuxgods.com" url="https://github.com/kreiger/intellij-idea-inspection-utility-class-can-be-singleton">Christoffer Hammarström</vendor>
 
@@ -24,8 +24,10 @@
   <!-- depends>com.intellij.modules.java</depends -->
 
   <extensions defaultExtensionNs="com.intellij">
-    <localInspection implementationClass="com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton.UtilityClassCanBeSingletonInspection"
+    <localInspection implementationClass="com.linuxgods.kreiger.intellij.idea.inspection.statics.singleton.StaticsClassCanBeSingletonInspection"
             groupName="Class structure" groupPath="Java" displayName="Utility class can be singleton" enabledByDefault="true"/>
+    <localInspection implementationClass="com.linuxgods.kreiger.intellij.idea.inspection.statics.dependency.injection.StaticReferenceCanBeInjectedDependencyInspection"
+                     groupName="Class structure" groupPath="Java" displayName="Static reference can be converted to injected dependency" enabledByDefault="true"/>
     <!-- Add your extensions here -->
   </extensions>
 
@@ -39,7 +41,7 @@
 
   <actions>
     <!-- Add your actions here -->
-    <action id="ConvertUtilityClassToSingleton" class="com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton.ConvertUtilityClassToSingletonAction"
+    <action id="ConvertUtilityClassToSingleton" class="com.linuxgods.kreiger.intellij.idea.inspection.statics.singleton.ConvertStaticsClassToSingletonAction"
             text="Convert Utility class to Singleton">
       <add-to-group group-id="RefactoringMenu4" anchor="before" relative-to-action="AnonymousToInner"/>
     </action>

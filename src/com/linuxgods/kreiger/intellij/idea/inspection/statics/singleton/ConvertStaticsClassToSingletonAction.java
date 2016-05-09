@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton;
+package com.linuxgods.kreiger.intellij.idea.inspection.statics.singleton;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -12,12 +12,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ConvertUtilityClassToSingletonAction extends AnAction {
+public class ConvertStaticsClassToSingletonAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         PsiClass psiClass = getPsiClass(e);
         if (null != psiClass) {
-            new ConvertUtilityClassToSingletonFix().applyFix(psiClass.getProject(), psiClass);
+            new ConvertStaticsClassToSingletonFix().applyFix(psiClass.getProject(), psiClass);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton;
+package com.linuxgods.kreiger.intellij.idea.inspection.statics.singleton;
 
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;

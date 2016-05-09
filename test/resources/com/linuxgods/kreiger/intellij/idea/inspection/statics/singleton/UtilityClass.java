@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.intellij.idea.inspections.utilityclass.singleton;
+package com.linuxgods.kreiger.intellij.idea.inspection.statics.singleton;
 
 public class UtilityClass {
     public static boolean isFoo() {
